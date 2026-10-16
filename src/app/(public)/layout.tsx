@@ -9,7 +9,7 @@ import { PublicAuthProvider } from "@/contexts/PublicAuthContext";
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <PublicAuthProvider>
-      <div className="flex min-h-screen flex-col pb-16">
+      <div className="flex min-h-screen flex-col">
         <OfflineBanner />
         <Navbar />
         <main className="flex-1">{children}</main>

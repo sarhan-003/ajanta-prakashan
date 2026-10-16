@@ -11,6 +11,7 @@ import { LoadingSpinner } from "@/components/common/LoadingSpinner";
 import { Card } from "@/components/common/Card";
 import { Badge } from "@/components/common/Badge";
 import { LandingImageForm } from "@/components/admin/LandingImageForm";
+import { cn } from "@/utils/cn";
 import { useToast } from "@/contexts/ToastContext";
 import { useAdminAuth } from "@/contexts/AdminAuthContext";
 import {
@@ -117,7 +118,7 @@ export default function AdminLandingImagesPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {sorted.map((image, i) => (
-            <Card key={image.id} className="overflow-hidden">
+            <Card key={image.id} className={cn("overflow-hidden", !image.active && "opacity-50")}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={image.imageUrl} alt={image.caption} className="h-36 w-full object-cover" />
               <div className="space-y-2 p-4">

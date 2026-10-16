@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Upload } from "lucide-react";
+import { AlertTriangle, Loader2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/common/Button";
@@ -40,6 +40,7 @@ export function LandingImageForm({
   });
 
   const imageUrl = watch("imageUrl");
+  const isActive = watch("active");
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -110,7 +111,15 @@ export function LandingImageForm({
         <Input id="displayOrder" type="number" {...register("displayOrder", { valueAsNumber: true })} />
       </FormField>
 
-      <Checkbox label="Active (visible on the public home page)" {...register("active")} />
+      <div>
+        <Checkbox label="Active (visible on the public home page)" {...register("active")} />
+        {!isActive && (
+          <p className="mt-2 flex items-start gap-1.5 rounded-md bg-amber-50 px-3 py-2 pl-6 text-xs text-amber-800">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            This image will NOT appear on the public site (or as a popup, even if checked below) until you check this box.
+          </p>
+        )}
+      </div>
       <div>
         <Checkbox label="Also show as a popup banner on page load" {...register("showAsPopup")} />
         <p className="mt-1 pl-6 text-xs text-ink-400">

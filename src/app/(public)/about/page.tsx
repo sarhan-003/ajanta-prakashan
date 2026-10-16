@@ -1,39 +1,58 @@
 "use client";
 
-import { BookOpen, Building2, Landmark } from "lucide-react";
+import { ArrowRight, BookOpen, Building2, Landmark, MapPin } from "lucide-react";
+import { PageHero } from "@/components/public/PageHero";
+import { LinkButton } from "@/components/common/LinkButton";
+import { Reveal } from "@/components/common/Reveal";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+
+const PILLARS = [
+  { icon: BookOpen, title: "Publication", text: "Accepted conference papers are published in peer-reviewed journals." },
+  { icon: Building2, title: "Partner Institutions", text: "We work with colleges and universities to organize academic conferences." },
+  { icon: Landmark, title: "Multi-Disciplinary", text: "Conferences span commerce, law, sciences, humanities and technology." },
+];
 
 export default function AboutPage() {
   const { settings } = useSiteSettings();
   return (
-    <div className="container-page max-w-3xl py-12">
-      <h1 className="font-serif text-3xl font-bold text-ink-900">About {settings.websiteName}</h1>
-      <p className="prose-content mt-4 whitespace-pre-line">{settings.description}</p>
+    <>
+      <PageHero eyebrow="Who we are" title={`About ${settings.websiteName}`} description={settings.description} />
 
-      <div className="mt-10 grid gap-5 sm:grid-cols-3">
-        <div className="rounded-xl border border-ink-200 bg-white p-5">
-          <BookOpen className="h-7 w-7 text-brand-500" />
-          <h3 className="mt-3 font-medium text-ink-900">Publication</h3>
-          <p className="mt-1 text-sm text-ink-500">Accepted conference papers are published in peer-reviewed journals.</p>
-        </div>
-        <div className="rounded-xl border border-ink-200 bg-white p-5">
-          <Building2 className="h-7 w-7 text-brand-500" />
-          <h3 className="mt-3 font-medium text-ink-900">Partner Institutions</h3>
-          <p className="mt-1 text-sm text-ink-500">We work with colleges and universities to organize academic conferences.</p>
-        </div>
-        <div className="rounded-xl border border-ink-200 bg-white p-5">
-          <Landmark className="h-7 w-7 text-brand-500" />
-          <h3 className="mt-3 font-medium text-ink-900">Multi-Disciplinary</h3>
-          <p className="mt-1 text-sm text-ink-500">Conferences span commerce, law, sciences, humanities and technology.</p>
-        </div>
+      <div className="container-page max-w-5xl py-12 sm:py-16">
+        <Reveal className="grid gap-6 sm:grid-cols-3">
+          {PILLARS.map((p) => (
+            <div
+              key={p.title}
+              className="group rounded-2xl border border-ink-200/70 bg-white p-6 shadow-card transition duration-300 hover:-translate-y-1 hover:border-brand-200 hover:shadow-lift"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-colors duration-300 group-hover:bg-brand-500 group-hover:text-white">
+                <p.icon className="h-6 w-6" />
+              </div>
+              <h3 className="mt-5 font-semibold text-ink-900">{p.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-500">{p.text}</p>
+            </div>
+          ))}
+        </Reveal>
+
+        {settings.address && (
+          <Reveal className="mt-10">
+            <div className="flex flex-col gap-6 rounded-2xl border border-ink-200/70 bg-white p-6 shadow-card sm:flex-row sm:items-center sm:justify-between sm:p-8">
+              <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                  <MapPin className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-ink-900">Registered Address</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-600">{settings.address}</p>
+                </div>
+              </div>
+              <LinkButton href="/contact" variant="outline" className="shrink-0">
+                Get in touch <ArrowRight className="h-4 w-4" />
+              </LinkButton>
+            </div>
+          </Reveal>
+        )}
       </div>
-
-      {settings.address && (
-        <div className="mt-10 rounded-xl border border-ink-200 bg-white p-5">
-          <h3 className="font-medium text-ink-900">Registered Address</h3>
-          <p className="mt-1 text-sm text-ink-600">{settings.address}</p>
-        </div>
-      )}
-    </div>
+    </>
   );
 }

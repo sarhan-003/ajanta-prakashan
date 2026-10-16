@@ -10,6 +10,7 @@ Firestore is the single source of truth. Nothing dynamic (conferences, events, n
 - [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Folder Structure](#folder-structure)
+- [Design System](#design-system)
 - [Firestore Schema](#firestore-schema)
 - [Security Model](#security-model)
 - [Getting Started](#getting-started)
@@ -69,7 +70,7 @@ Every page — public or admin — calls a function in `src/services/*`, never F
 | Concern | Choice |
 |---|---|
 | Framework | Next.js 15 (App Router), React 19, TypeScript |
-| Styling | Tailwind CSS |
+| Styling | Tailwind CSS with a custom `brand` / `ink` / `paper` palette; self-hosted Inter + Playfair Display fonts (see [Design System](#design-system)) |
 | Database | Cloud Firestore |
 | Auth | Firebase Authentication (Email/Password) |
 | Forms | React Hook Form + Zod |
@@ -92,8 +93,8 @@ src/
       (protected)/       # route group wrapped in <AdminRoute> (auth + authorization guard)
         dashboard/ users/ conferences/ events/ notifications/ media/ committees/ payment/ database/ settings/ profile/ logs/
   components/
-    common/               # Button, Card, Modal, ConfirmDialog, DataTable primitives, FormControls, Toast...
-    public/               # Navbar, Footer, ConferenceCard, EventCard, CTAButtons, CommitteeSection...
+    common/               # Button, LinkButton, Card, Badge, Modal, ConfirmDialog, FormControls, Reveal, Skeleton...
+    public/               # Navbar, Footer, Hero, Section, PageHero, ConferenceCard, EventCard, DateTile, RegistrationGate...
     admin/                # AdminSidebar, AdminShell, AdminRoute, *Form components
   firebase/               # config.ts, auth.ts, firestore.ts, messaging.ts — no storage.ts, ever
   services/               # one file per collection: conferenceService, eventService, userService, ...
@@ -110,6 +111,16 @@ firestore.indexes.json
 public/
   manifest.webmanifest, sw.js, offline.html, images/, documents/
 ```
+
+## Design System
+
+The look of the whole app (public site and admin panel) is driven by a handful of shared tokens and components, so a change in one place restyles every page.
+
+- **Typography** — *Inter* for UI text and *Playfair Display* for headings (`font-serif`). Both are variable fonts, bundled in `src/app/fonts/` and loaded with `next/font/local` in `src/app/layout.tsx` (SIL Open Font License 1.1). Nothing is fetched from Google at build time or runtime, and they work offline in the PWA.
+- **Colour tokens** (`tailwind.config.ts`) — `brand` (copper/brass, the primary accent), `ink` (cool neutrals for text and dark bands) and `paper` (warm off-white page backgrounds). Use these tokens instead of hard-coded hex values.
+- **Elevation & motion** — `shadow-card`, `shadow-lift`, `shadow-glow`; `animate-fade-up`, `animate-scale-in`, `animate-float`. All animation is switched off automatically for visitors who prefer reduced motion (`globals.css`).
+- **Shared building blocks** — `components/common`: `Button` / `LinkButton` (variants `primary`, `secondary`, `outline`, `ghost`, `danger`, plus `light` and `glass` for dark bands; styles live in `buttonStyles.ts`), `Card`, `Badge`, `EmptyState`, `Skeleton`, `FormControls`, `Modal`, `Reveal` (fade-in on scroll). `components/public`: `Section`, `PageHero`, `DateTile`, `RegistrationGate`.
+- **Install banner** — while the PWA install prompt is visible it sets `data-install-banner` on `<html>`; `globals.css` uses that to lift the floating WhatsApp button and pad the footer so nothing is covered.
 
 ## Firestore Schema
 

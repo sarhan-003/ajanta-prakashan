@@ -3,10 +3,10 @@
 import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Calendar, Clock, IndianRupee, Mail, MapPin, Phone, Radio } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, IndianRupee, Mail, MapPin, Phone, Radio } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/common/LoadingSpinner";
-import { Badge } from "@/components/common/Badge";
 import { CTAButtons } from "@/components/public/CTAButtons";
 import { FeeTable } from "@/components/public/FeeCard";
 import { TracksList, SubThemesList } from "@/components/public/TrackCard";
@@ -15,11 +15,11 @@ import { RequireRegistration } from "@/components/public/RequireRegistration";
 import { getConferenceById } from "@/services/conferenceService";
 import { getCommitteesByConference } from "@/services/committeeService";
 import type { CommitteeMember, Conference } from "@/types";
-import { formatDate } from "@/utils/date";
+import { formatDate, isUpcoming } from "@/utils/date";
 
 export default function ConferenceDetailPage() {
   return (
-    <Suspense fallback={<div className="container-page py-12"><Skeleton className="h-64 w-full rounded-xl" /></div>}>
+    <Suspense fallback={<div className="container-page py-12"><Skeleton className="h-64 w-full rounded-2xl" /></div>}>
       <RequireRegistration>
         <ConferenceDetailInner />
       </RequireRegistration>
@@ -46,10 +46,13 @@ function ConferenceDetailInner() {
 
   if (conference === undefined) {
     return (
-      <div className="container-page py-12">
-        <Skeleton className="h-64 w-full rounded-xl" />
-        <Skeleton className="mt-6 h-8 w-2/3 rounded-md" />
-        <Skeleton className="mt-3 h-4 w-1/3 rounded-md" />
+      <div>
+        <Skeleton className="h-80 w-full rounded-none" />
+        <div className="container-page py-10">
+          <Skeleton className="h-8 w-2/3 rounded-md" />
+          <Skeleton className="mt-4 h-4 w-1/3 rounded-md" />
+          <Skeleton className="mt-8 h-56 w-full rounded-2xl" />
+        </div>
       </div>
     );
   }
@@ -62,47 +65,81 @@ function ConferenceDetailInner() {
     );
   }
 
+  const past = !isUpcoming(conference.date);
+
   return (
     <div>
-      <div className="relative bg-ink-900">
-        <div className="container-page relative py-14 sm:py-20">
-          <Badge tone="brand">{conference.mode.toUpperCase()}</Badge>
-          <h1 className="mt-4 max-w-3xl font-serif text-3xl font-bold text-white sm:text-4xl">{conference.title}</h1>
-          {conference.theme && <p className="mt-1 max-w-2xl text-ink-400">Theme: {conference.theme}</p>}
-          <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-ink-200">
-            <span className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-brand-400" /> {formatDate(conference.date)}
+      {/* Header band */}
+      <div className="relative isolate overflow-hidden bg-ink-950 text-white">
+        <div
+          className="absolute inset-0 -z-10"
+          style={{
+            backgroundImage:
+              "radial-gradient(60% 80% at 90% 0%, rgba(181,101,29,0.5), transparent 60%), radial-gradient(45% 60% at 0% 100%, rgba(220,137,53,0.18), transparent 60%), linear-gradient(180deg, #14171c 0%, #0a0c0f 100%)",
+          }}
+          aria-hidden
+        />
+        <div className="bg-dots absolute inset-0 -z-10 opacity-50 [mask-image:radial-gradient(70%_90%_at_75%_20%,black,transparent)]" aria-hidden />
+
+        <div className="container-page pb-20 pt-8 sm:pb-24 sm:pt-10">
+          <Link href="/conferences" className="inline-flex items-center gap-1.5 text-sm text-ink-300 transition-colors hover:text-white">
+            <ArrowLeft className="h-4 w-4" /> All conferences
+          </Link>
+
+          <div className="mt-7 flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-brand-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-200 ring-1 ring-inset ring-brand-400/30">
+              {conference.mode}
             </span>
-            {conference.startTime && (
-              <span className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-brand-400" /> {conference.startTime}
-                {conference.endTime ? ` – ${conference.endTime}` : ""}
+            {past && (
+              <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-ink-200 ring-1 ring-inset ring-white/15">
+                Completed
               </span>
             )}
-            <span className="flex items-center gap-2">
-              <MapPin className="h-4 w-4 text-brand-400" /> {conference.venue}
-            </span>
           </div>
-          <div className="mt-7">
+
+          <h1 className="mt-5 max-w-4xl font-serif text-3xl font-bold leading-tight tracking-tight sm:text-5xl">{conference.title}</h1>
+          {conference.theme && (
+            <p className="mt-4 max-w-3xl text-base leading-relaxed text-ink-300 sm:text-lg">
+              <span className="font-semibold text-brand-300">Theme:</span> {conference.theme}
+            </p>
+          )}
+
+          <div className="mt-8 flex max-w-4xl flex-wrap items-start gap-3">
+            <InfoChip icon={Calendar} label="Date" value={formatDate(conference.date)} />
+            {conference.startTime && (
+              <InfoChip icon={Clock} label="Time" value={`${conference.startTime}${conference.endTime ? ` – ${conference.endTime}` : ""}`} />
+            )}
+            <InfoChip icon={MapPin} label="Venue" value={conference.venue} />
+          </div>
+
+          <div className="mt-8">
             <CTAButtons conference={conference} />
           </div>
         </div>
+
+        <svg className="absolute bottom-0 left-0 w-full text-paper-50" viewBox="0 0 1440 56" preserveAspectRatio="none" aria-hidden>
+          <path d="M0 56V30C240 4 480 4 720 18s480 22 720 4v34H0Z" fill="currentColor" />
+        </svg>
       </div>
 
-      <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_320px]">
-        <div className="space-y-12">
+      {/* Body */}
+      <div className="container-page grid gap-10 py-12 lg:grid-cols-[1fr_340px] lg:gap-12">
+        <div className="min-w-0 space-y-14">
           {conference.description && (
             <SectionBlock title="About the Conference">
-              <p className="prose-content whitespace-pre-line">{conference.description}</p>
+              <p className="prose-content whitespace-pre-line text-base">{conference.description}</p>
             </SectionBlock>
           )}
 
           {conference.objectives?.length > 0 && (
             <SectionBlock title="Objectives">
-              <ol className="list-decimal space-y-3 pl-5 text-ink-700">
+              <ol className="space-y-3">
                 {conference.objectives.map((obj, i) => (
-                  <li key={i} className="leading-relaxed">
-                    {obj}
+                  <li key={i} className="flex gap-4 rounded-xl border border-ink-200/70 bg-white p-4 shadow-card">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-50 text-sm font-semibold text-brand-700">
+                      {i + 1}
+                    </span>
+                    <span className="pt-0.5 leading-relaxed text-ink-700">{obj}</span>
                   </li>
                 ))}
               </ol>
@@ -123,31 +160,33 @@ function ConferenceDetailInner() {
 
           {conference.paperGuidelines && (
             <SectionBlock title="Call for Papers &amp; Guidelines">
-              <ul className="grid gap-2 text-sm text-ink-700 sm:grid-cols-2">
-                <li>Font: {conference.paperGuidelines.font}, {conference.paperGuidelines.fontSize}</li>
-                <li>Line spacing: {conference.paperGuidelines.lineSpacing}</li>
-                <li>File format: {conference.paperGuidelines.fileFormat}</li>
-                <li>Margins: {conference.paperGuidelines.marginLeft} left / {conference.paperGuidelines.marginRight} right</li>
-                <li>Word limit: {conference.paperGuidelines.maxWords}</li>
-                <li>References: {conference.paperGuidelines.referenceStyle} style</li>
-                <li>Plagiarism limit: {conference.paperGuidelines.plagiarismLimit}</li>
+              <dl className="grid gap-3 sm:grid-cols-2">
+                <Spec label="Font" value={`${conference.paperGuidelines.font}, ${conference.paperGuidelines.fontSize}`} />
+                <Spec label="Line spacing" value={conference.paperGuidelines.lineSpacing} />
+                <Spec label="File format" value={conference.paperGuidelines.fileFormat} />
+                <Spec label="Margins" value={`${conference.paperGuidelines.marginLeft} left / ${conference.paperGuidelines.marginRight} right`} />
+                <Spec label="Word limit" value={conference.paperGuidelines.maxWords} />
+                <Spec label="References" value={`${conference.paperGuidelines.referenceStyle} style`} />
+                <Spec label="Plagiarism limit" value={conference.paperGuidelines.plagiarismLimit} />
                 {conference.paperGuidelines.journalName && (
-                  <li>
-                    Journal: {conference.paperGuidelines.journalName}
-                    {conference.paperGuidelines.journalIssn ? ` (ISSN ${conference.paperGuidelines.journalIssn})` : ""}
-                  </li>
+                  <Spec
+                    label="Journal"
+                    value={`${conference.paperGuidelines.journalName}${conference.paperGuidelines.journalIssn ? ` (ISSN ${conference.paperGuidelines.journalIssn})` : ""}`}
+                  />
                 )}
-              </ul>
+              </dl>
               {conference.paperGuidelines.requiredFields?.length > 0 && (
-                <p className="mt-3 text-sm text-ink-600">
-                  Required in the manuscript: {conference.paperGuidelines.requiredFields.join(", ")}.
+                <p className="mt-4 text-sm leading-relaxed text-ink-600">
+                  <span className="font-medium text-ink-800">Required in the manuscript:</span> {conference.paperGuidelines.requiredFields.join(", ")}.
                 </p>
               )}
               {conference.paperGuidelines.submissionNote && (
-                <p className="mt-3 text-sm text-ink-600">{conference.paperGuidelines.submissionNote}</p>
+                <p className="mt-3 text-sm leading-relaxed text-ink-600">{conference.paperGuidelines.submissionNote}</p>
               )}
               {conference.paperGuidelines.awards && (
-                <p className="mt-3 text-sm font-medium text-brand-700">{conference.paperGuidelines.awards}</p>
+                <p className="mt-4 rounded-xl bg-brand-50 px-4 py-3 text-sm font-medium leading-relaxed text-brand-800 ring-1 ring-inset ring-brand-100">
+                  {conference.paperGuidelines.awards}
+                </p>
               )}
             </SectionBlock>
           )}
@@ -160,30 +199,32 @@ function ConferenceDetailInner() {
 
           {conference.paymentInformation && (
             <SectionBlock title="Payment Information">
-              <div className="rounded-xl border border-ink-200 bg-white p-5">
-                <dl className="grid gap-3 text-sm sm:grid-cols-2">
+              <div className="rounded-2xl border border-ink-200/70 bg-white p-5 shadow-card sm:p-6">
+                <dl className="grid gap-4 text-sm sm:grid-cols-2">
                   <Field label="Account Name" value={conference.paymentInformation.accountName} />
                   <Field label="Account Number" value={conference.paymentInformation.accountNumber} />
                   <Field label="Bank" value={conference.paymentInformation.bank} />
                   <Field label="Branch" value={conference.paymentInformation.branch} />
                   <Field label="IFSC Code" value={conference.paymentInformation.ifsc} />
-                  {conference.paymentInformation.upiMobile && (
-                    <Field label="GPay / PhonePe" value={conference.paymentInformation.upiMobile} />
-                  )}
+                  {conference.paymentInformation.upiMobile && <Field label="GPay / PhonePe" value={conference.paymentInformation.upiMobile} />}
                 </dl>
                 {conference.paymentInformation.paymentQrUrl && (
-                  <div className="mt-4">
+                  <div className="mt-5">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={conference.paymentInformation.paymentQrUrl} alt="Payment QR code" className="h-48 w-48 rounded-lg border border-ink-200 object-contain" />
+                    <img
+                      src={conference.paymentInformation.paymentQrUrl}
+                      alt="Payment QR code"
+                      className="h-48 w-48 rounded-xl border border-ink-200 bg-white object-contain p-2"
+                    />
                   </div>
                 )}
-                {conference.paymentInformation.notes && <p className="mt-3 text-sm text-ink-500">{conference.paymentInformation.notes}</p>}
+                {conference.paymentInformation.notes && <p className="mt-4 text-sm leading-relaxed text-ink-500">{conference.paymentInformation.notes}</p>}
               </div>
             </SectionBlock>
           )}
         </div>
 
-        <aside className="space-y-6 lg:sticky lg:top-20 lg:self-start">
+        <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
           {conference.registrationFees?.length > 0 && (
             <SidebarCard title="Registration Fees" icon={IndianRupee}>
               <FeeTable fees={conference.registrationFees} />
@@ -192,11 +233,11 @@ function ConferenceDetailInner() {
 
           {conference.importantDates?.length > 0 && (
             <SidebarCard title="Important Dates" icon={Calendar}>
-              <ul className="space-y-2.5 text-sm">
+              <ul className="divide-y divide-ink-100 text-sm">
                 {conference.importantDates.map((d, i) => (
-                  <li key={i} className="flex items-center justify-between gap-3">
+                  <li key={i} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
                     <span className="text-ink-600">{d.label}</span>
-                    <span className="font-medium text-ink-900">{formatDate(d.date)}</span>
+                    <span className="shrink-0 font-semibold text-ink-900">{formatDate(d.date)}</span>
                   </li>
                 ))}
               </ul>
@@ -204,8 +245,8 @@ function ConferenceDetailInner() {
           )}
 
           <SidebarCard title="Venue" icon={MapPin}>
-            <p className="text-sm text-ink-700">{conference.venue}</p>
-            {conference.address && <p className="mt-1 text-sm text-ink-500">{conference.address}</p>}
+            <p className="text-sm font-medium text-ink-800">{conference.venue}</p>
+            {conference.address && <p className="mt-1 text-sm leading-relaxed text-ink-500">{conference.address}</p>}
             <p className="mt-1 text-sm text-ink-500">
               {conference.city}
               {conference.city && conference.state ? ", " : ""}
@@ -215,30 +256,42 @@ function ConferenceDetailInner() {
 
           {(conference.organizer || conference.coOrganizer) && (
             <SidebarCard title="Organized By" icon={Radio}>
-              <p className="text-sm text-ink-700">{conference.organizer}</p>
-              {conference.coOrganizer && <p className="mt-1 text-sm text-ink-500">In collaboration with {conference.coOrganizer}</p>}
+              <p className="text-sm font-medium text-ink-800">{conference.organizer}</p>
+              {conference.coOrganizer && <p className="mt-1 text-sm leading-relaxed text-ink-500">In collaboration with {conference.coOrganizer}</p>}
             </SidebarCard>
           )}
 
           {(conference.contactEmail || conference.contactPhone) && (
             <SidebarCard title="Contact" icon={Mail}>
-              {conference.contactEmail && (
-                <a href={`mailto:${conference.contactEmail}`} className="flex items-center gap-2 text-sm text-brand-600 hover:underline">
-                  <Mail className="h-3.5 w-3.5" /> {conference.contactEmail}
-                </a>
-              )}
-              {conference.contactPhone && (
-                <a href={`tel:${conference.contactPhone}`} className="mt-2 flex items-center gap-2 text-sm text-brand-600 hover:underline">
-                  <Phone className="h-3.5 w-3.5" /> {conference.contactPhone}
-                </a>
-              )}
+              <div className="space-y-2.5">
+                {conference.contactEmail && (
+                  <a href={`mailto:${conference.contactEmail}`} className="flex items-center gap-2.5 break-all text-sm font-medium text-brand-700 hover:underline">
+                    <Mail className="h-4 w-4 shrink-0" /> {conference.contactEmail}
+                  </a>
+                )}
+                {conference.contactPhone && (
+                  <a href={`tel:${conference.contactPhone}`} className="flex items-center gap-2.5 text-sm font-medium text-brand-700 hover:underline">
+                    <Phone className="h-4 w-4 shrink-0" /> {conference.contactPhone}
+                  </a>
+                )}
+              </div>
             </SidebarCard>
           )}
-
-          <Link href="/conferences" className="block text-center text-sm text-ink-500 hover:text-ink-700">
-            ← Back to all conferences
-          </Link>
         </aside>
+      </div>
+    </div>
+  );
+}
+
+function InfoChip({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+  return (
+    <div className="flex min-w-[11rem] max-w-full items-start gap-3 rounded-xl border border-white/10 bg-white/[0.06] p-3.5 pr-5 backdrop-blur sm:max-w-sm">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-500/20 text-brand-300">
+        <Icon className="h-[18px] w-[18px]" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">{label}</p>
+        <p className="mt-0.5 text-sm font-medium leading-snug text-white">{value}</p>
       </div>
     </div>
   );
@@ -247,20 +300,33 @@ function ConferenceDetailInner() {
 function SectionBlock({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
     <section>
-      <h2 className="font-serif text-xl font-semibold text-ink-900">{title}</h2>
-      {subtitle && <p className="mt-1 text-sm text-ink-500">{subtitle}</p>}
-      <div className="mt-4">{children}</div>
+      <h2 className="font-serif text-2xl font-semibold tracking-tight text-ink-900 sm:text-3xl">{title}</h2>
+      <span className="mt-3 block h-1 w-10 rounded-full bg-brand-500" aria-hidden />
+      {subtitle && <p className="mt-3 text-sm text-ink-500">{subtitle}</p>}
+      <div className="mt-6">{children}</div>
     </section>
   );
 }
 
-function SidebarCard({ title, icon: Icon, children }: { title: string; icon: typeof Calendar; children: React.ReactNode }) {
+function SidebarCard({ title, icon: Icon, children }: { title: string; icon: LucideIcon; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-ink-200 bg-white p-5">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-ink-500">
-        <Icon className="h-4 w-4 text-brand-500" /> {title}
+    <div className="rounded-2xl border border-ink-200/70 bg-white p-5 shadow-card">
+      <h3 className="mb-4 flex items-center gap-2.5 text-sm font-semibold text-ink-900">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
+          <Icon className="h-4 w-4" />
+        </span>
+        {title}
       </h3>
       {children}
+    </div>
+  );
+}
+
+function Spec({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-ink-200/70 bg-white px-4 py-3">
+      <dt className="text-[11px] font-semibold uppercase tracking-wider text-ink-400">{label}</dt>
+      <dd className="mt-0.5 text-sm font-medium text-ink-900">{value}</dd>
     </div>
   );
 }
@@ -268,8 +334,8 @@ function SidebarCard({ title, icon: Icon, children }: { title: string; icon: typ
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-ink-400">{label}</dt>
-      <dd className="mt-0.5 font-medium text-ink-900">{value}</dd>
+      <dt className="text-xs font-semibold uppercase tracking-wider text-ink-400">{label}</dt>
+      <dd className="mt-1 break-words font-medium text-ink-900">{value}</dd>
     </div>
   );
 }

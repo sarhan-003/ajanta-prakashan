@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { NotificationCard } from "@/components/public/NotificationCard";
+import { PageHero } from "@/components/public/PageHero";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Skeleton } from "@/components/common/LoadingSpinner";
@@ -42,38 +43,37 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="container-page py-12">
-      <div className="mb-8">
-        <h1 className="font-serif text-3xl font-bold text-ink-900">Notification Center</h1>
-        <p className="mt-2 text-ink-500">Deadlines, acceptances, schedule changes and important announcements.</p>
-      </div>
+    <>
+      <PageHero eyebrow="Stay informed" title="Notification Center" description="Deadlines, acceptances, schedule changes and important announcements." />
 
-      {loading ? (
-        <div className="space-y-4">
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-20 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : error ? (
-        <ErrorState message={error} />
-      ) : items.length === 0 ? (
-        <EmptyState title="No notifications yet." />
-      ) : (
-        <>
+      <div className="container-page max-w-4xl py-10 sm:py-12">
+        {loading ? (
           <div className="space-y-4">
-            {items.map((n) => (
-              <NotificationCard key={n.id} notification={n} />
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-28 w-full rounded-2xl" />
             ))}
           </div>
-          {hasMore && (
-            <div className="mt-8 flex justify-center">
-              <Button variant="outline" onClick={loadMore} loading={loadingMore}>
-                Load more
-              </Button>
+        ) : error ? (
+          <ErrorState message={error} />
+        ) : items.length === 0 ? (
+          <EmptyState title="No notifications yet." description="Deadlines and announcements will appear here as soon as they are published." />
+        ) : (
+          <>
+            <div className="space-y-4">
+              {items.map((n) => (
+                <NotificationCard key={n.id} notification={n} />
+              ))}
             </div>
-          )}
-        </>
-      )}
-    </div>
+            {hasMore && (
+              <div className="mt-10 flex justify-center">
+                <Button variant="outline" size="lg" onClick={loadMore} loading={loadingMore}>
+                  Load more
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 }

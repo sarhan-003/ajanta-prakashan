@@ -1,9 +1,11 @@
 import { Download, ExternalLink, FileText, MessageCircle } from "lucide-react";
+import { buttonClasses } from "@/components/common/buttonStyles";
 import { usePublicAuth } from "@/contexts/PublicAuthContext";
 import type { Conference } from "@/types";
 import { buildWhatsAppLink, interestWhatsAppMessage } from "@/utils/whatsapp";
 import { formatDate } from "@/utils/date";
 
+/** Call-to-action buttons for a conference. Designed to sit on the dark conference header band. */
 export function CTAButtons({ conference }: { conference: Conference }) {
   const { profile } = usePublicAuth();
 
@@ -30,20 +32,16 @@ export function CTAButtons({ conference }: { conference: Conference }) {
   if (!buttons.length) return null;
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
       {buttons.map((btn) => (
         <a
           key={btn.label}
           href={btn.href}
           target="_blank"
           rel="noopener noreferrer"
-          className={
-            btn.primary
-              ? "inline-flex items-center gap-2 rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-brand-600"
-              : "inline-flex items-center gap-2 rounded-lg border border-ink-300 bg-white px-5 py-2.5 text-sm font-medium text-ink-700 hover:bg-ink-50"
-          }
+          className={buttonClasses({ variant: btn.primary ? "primary" : "glass", size: "lg", className: "w-full sm:w-auto" })}
         >
-          <btn.icon className="h-4 w-4" /> {btn.label}
+          <btn.icon className="h-5 w-5" /> {btn.label}
         </a>
       ))}
     </div>

@@ -11,5 +11,5 @@ export function LoadingSpinner({ label, className }: { label?: string; className
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-md bg-ink-200/70", className)} />;
+  return <div className={cn("skeleton", className)} aria-hidden />;
 }

@@ -37,7 +37,7 @@ export function DataTable<T extends { id: string }>({
   actions?: (row: T) => React.ReactNode;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-ink-200 bg-white">
+    <div className="overflow-hidden rounded-2xl border border-ink-200/70 bg-white shadow-card">
       {onRefresh && (
         <div className="flex justify-end border-b border-ink-100 px-4 py-2">
           <Button variant="ghost" size="sm" onClick={onRefresh} disabled={loading}>
@@ -55,7 +55,7 @@ export function DataTable<T extends { id: string }>({
           {/* Desktop table */}
           <div className="hidden overflow-x-auto md:block">
             <table className="w-full text-sm">
-              <thead className="bg-ink-50 text-left text-xs uppercase tracking-wide text-ink-500">
+              <thead className="bg-paper-50 text-left text-xs uppercase tracking-wide text-ink-500">
                 <tr>
                   {columns.map((col) => (
                     <th key={col.key} className={"px-4 py-3 font-medium " + (col.className || "")}>
@@ -67,7 +67,7 @@ export function DataTable<T extends { id: string }>({
               </thead>
               <tbody className="divide-y divide-ink-100">
                 {rows.map((row) => (
-                  <tr key={row.id} className="hover:bg-ink-50/60">
+                  <tr key={row.id} className="transition-colors hover:bg-paper-50/80">
                     {columns.map((col) => (
                       <td key={col.key} className={"px-4 py-3 align-top text-ink-700 " + (col.className || "")}>
                         {col.render(row)}

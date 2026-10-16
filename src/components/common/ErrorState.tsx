@@ -3,9 +3,11 @@ import { Button } from "./Button";
 
 export function ErrorState({ message, onRetry }: { message?: string; onRetry?: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-red-200 bg-red-50 px-6 py-14 text-center">
-      <AlertTriangle className="h-10 w-10 text-red-400" aria-hidden />
-      <p className="text-base font-medium text-red-800">Something went wrong</p>
+    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-6 py-14 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-500 ring-8 ring-red-50">
+        <AlertTriangle className="h-6 w-6" aria-hidden />
+      </div>
+      <p className="mt-1 text-base font-semibold text-red-800">Something went wrong</p>
       <p className="max-w-sm text-sm text-red-600">
         {message || "We couldn't load this data. Please check your connection and try again."}
       </p>

@@ -30,14 +30,15 @@ export function FloatingWhatsAppButton() {
   );
 
   return (
-    <div className="fixed bottom-24 right-5 z-40 flex flex-col items-end gap-2">
+    // `wa-float` lets globals.css lift the button above the install banner while that is showing.
+    <div className="wa-float fixed bottom-5 right-4 z-40 flex flex-col items-end gap-2 transition-[bottom] duration-300 sm:right-6">
       {tooltipOpen && (
-        <div className="relative rounded-xl bg-white px-4 py-3 pr-8 text-sm text-ink-700 shadow-lg ring-1 ring-black/5">
+        <div className="relative animate-scale-in rounded-2xl rounded-br-md bg-white px-4 py-3 pr-9 text-sm font-medium text-ink-700 shadow-lift ring-1 ring-black/5">
           How can we help you?
           <button
             onClick={() => setTooltipOpen(false)}
             aria-label="Close"
-            className="absolute right-1.5 top-1.5 rounded-full p-1 text-ink-400 hover:bg-ink-100 hover:text-ink-600"
+            className="absolute right-1.5 top-1.5 rounded-full p-1 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-600"
           >
             <X className="h-3.5 w-3.5" />
           </button>

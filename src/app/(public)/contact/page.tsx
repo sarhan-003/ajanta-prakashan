@@ -1,33 +1,27 @@
 "use client";
 
-import { Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { ArrowUpRight, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
+import { PageHero } from "@/components/public/PageHero";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export default function ContactPage() {
   const { settings } = useSiteSettings();
-  return (
-    <div className="container-page max-w-2xl py-12">
-      <h1 className="font-serif text-3xl font-bold text-ink-900">Contact Us</h1>
-      <p className="mt-2 text-ink-500">Reach out for queries about conferences, registration or publication.</p>
+  const nothing = !settings.address && !settings.contactPhone && !settings.contactEmail && !settings.whatsappUrl;
 
-      <div className="mt-8 space-y-4">
-        {settings.address && (
-          <ContactRow icon={MapPin} label="Address" value={settings.address} />
-        )}
-        {settings.contactPhone && (
-          <ContactRow icon={Phone} label="Phone" value={settings.contactPhone} href={`tel:${settings.contactPhone}`} />
-        )}
-        {settings.contactEmail && (
-          <ContactRow icon={Mail} label="Email" value={settings.contactEmail} href={`mailto:${settings.contactEmail}`} />
-        )}
-        {settings.whatsappUrl && (
-          <ContactRow icon={MessageCircle} label="WhatsApp" value="Chat with us" href={settings.whatsappUrl} external />
-        )}
-        {!settings.address && !settings.contactPhone && !settings.contactEmail && !settings.whatsappUrl && (
-          <p className="text-sm text-ink-500">Contact details will be published here soon.</p>
-        )}
+  return (
+    <>
+      <PageHero eyebrow="We'd love to hear from you" title="Contact Us" description="Reach out for queries about conferences, registration or publication." />
+
+      <div className="container-page max-w-4xl py-10 sm:py-14">
+        <div className="grid gap-5 sm:grid-cols-2">
+          {settings.contactPhone && <ContactRow icon={Phone} label="Phone" value={settings.contactPhone} href={`tel:${settings.contactPhone}`} />}
+          {settings.contactEmail && <ContactRow icon={Mail} label="Email" value={settings.contactEmail} href={`mailto:${settings.contactEmail}`} />}
+          {settings.whatsappUrl && <ContactRow icon={MessageCircle} label="WhatsApp" value="Chat with us" href={settings.whatsappUrl} external />}
+          {settings.address && <ContactRow icon={MapPin} label="Address" value={settings.address} wide />}
+        </div>
+        {nothing && <p className="text-sm text-ink-500">Contact details will be published here soon.</p>}
       </div>
-    </div>
+    </>
   );
 }
 
@@ -37,27 +31,40 @@ function ContactRow({
   value,
   href,
   external,
+  wide,
 }: {
   icon: typeof Mail;
   label: string;
   value: string;
   href?: string;
   external?: boolean;
+  wide?: boolean;
 }) {
   const content = (
-    <div className="flex items-start gap-4 rounded-xl border border-ink-200 bg-white p-4">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
-        <Icon className="h-5 w-5" />
+    <div
+      className={`group flex h-full items-start gap-4 rounded-2xl border border-ink-200/70 bg-white p-5 shadow-card transition duration-300 ${
+        href ? "hover:-translate-y-1 hover:border-brand-200 hover:shadow-lift" : ""
+      }`}
+    >
+      <div
+        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 transition-colors duration-300 ${
+          href ? "group-hover:bg-brand-500 group-hover:text-white" : ""
+        }`}
+      >
+        <Icon className="h-6 w-6" />
       </div>
-      <div>
-        <p className="text-xs uppercase tracking-wide text-ink-400">{label}</p>
-        <p className="mt-0.5 font-medium text-ink-900">{value}</p>
+      <div className="min-w-0 flex-1">
+        <p className="text-xs font-semibold uppercase tracking-wider text-ink-400">{label}</p>
+        <p className="mt-1 break-words font-medium leading-relaxed text-ink-900">{value}</p>
       </div>
+      {href && <ArrowUpRight className="h-5 w-5 shrink-0 text-ink-300 transition-colors group-hover:text-brand-500" aria-hidden />}
     </div>
   );
-  if (!href) return content;
+
+  const wrapperClass = wide ? "sm:col-span-2" : undefined;
+  if (!href) return <div className={wrapperClass}>{content}</div>;
   return (
-    <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className="block hover:opacity-90">
+    <a href={href} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined} className={`block ${wrapperClass ?? ""}`}>
       {content}
     </a>
   );

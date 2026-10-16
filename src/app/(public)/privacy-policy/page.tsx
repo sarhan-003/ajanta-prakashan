@@ -1,15 +1,18 @@
 "use client";
 
+import { PageHero } from "@/components/public/PageHero";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 export default function PrivacyPolicyPage() {
   const { settings } = useSiteSettings();
   return (
-    <div className="container-page max-w-2xl py-12">
-      <h1 className="font-serif text-3xl font-bold text-ink-900">Privacy Policy</h1>
-      <div className="prose-content mt-6 whitespace-pre-line">
-        {settings.privacyPolicy || "The privacy policy will be published here soon."}
+    <>
+      <PageHero eyebrow="Legal" title="Privacy Policy" />
+      <div className="container-page max-w-3xl py-10 sm:py-14">
+        <div className="prose-content whitespace-pre-line rounded-2xl border border-ink-200/70 bg-white p-6 shadow-card sm:p-10">
+          {settings.privacyPolicy || "The privacy policy will be published here soon."}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

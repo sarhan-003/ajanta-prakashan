@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { EventCard } from "@/components/public/EventCard";
+import { PageHero } from "@/components/public/PageHero";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Skeleton } from "@/components/common/LoadingSpinner";
@@ -42,38 +43,37 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="container-page py-12">
-      <div className="mb-8">
-        <h1 className="font-serif text-3xl font-bold text-ink-900">Events</h1>
-        <p className="mt-2 text-ink-500">Seminars, workshops and other academic events.</p>
-      </div>
+    <>
+      <PageHero eyebrow="Happening soon" title="Events" description="Seminars, workshops and other academic events." />
 
-      {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-40 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : error ? (
-        <ErrorState message={error} />
-      ) : items.length === 0 ? (
-        <EmptyState title="No upcoming events available." />
-      ) : (
-        <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {items.map((e) => (
-              <EventCard key={e.id} event={e} />
+      <div className="container-page py-10 sm:py-12">
+        {loading ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-48 w-full rounded-2xl" />
             ))}
           </div>
-          {hasMore && (
-            <div className="mt-8 flex justify-center">
-              <Button variant="outline" onClick={loadMore} loading={loadingMore}>
-                Load more
-              </Button>
+        ) : error ? (
+          <ErrorState message={error} />
+        ) : items.length === 0 ? (
+          <EmptyState title="No upcoming events available." description="New seminars and workshops will be listed here as soon as they are announced." />
+        ) : (
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {items.map((e) => (
+                <EventCard key={e.id} event={e} />
+              ))}
             </div>
-          )}
-        </>
-      )}
-    </div>
+            {hasMore && (
+              <div className="mt-10 flex justify-center">
+                <Button variant="outline" size="lg" onClick={loadMore} loading={loadingMore}>
+                  Load more
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 }

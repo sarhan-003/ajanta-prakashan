@@ -21,7 +21,10 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = watchAuthState(async (user) => {
-      if (!user) {
+      // Visitors of the public site hold a silent anonymous session (see
+      // PublicAuthContext). That is not an admin sign-in attempt, so show the
+      // normal login form rather than an "Access Denied" screen.
+      if (!user || user.isAnonymous) {
         setState({ status: "signed-out", user: null, admin: null });
         return;
       }

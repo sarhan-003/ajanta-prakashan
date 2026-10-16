@@ -1,15 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CalendarClock, GraduationCap, Lock, Newspaper, ShieldCheck } from "lucide-react";
+import { ArrowRight, CalendarClock, GraduationCap, Newspaper, ShieldCheck } from "lucide-react";
 import { Hero } from "@/components/public/Hero";
 import { Section } from "@/components/public/Section";
 import { ConferenceCard } from "@/components/public/ConferenceCard";
 import { EventCard } from "@/components/public/EventCard";
 import { NotificationCard } from "@/components/public/NotificationCard";
 import { LandingGallery } from "@/components/public/LandingGallery";
+import { RegistrationGate } from "@/components/public/RegistrationGate";
 import { EmptyState } from "@/components/common/EmptyState";
+import { LinkButton } from "@/components/common/LinkButton";
+import { Reveal } from "@/components/common/Reveal";
 import { Skeleton } from "@/components/common/LoadingSpinner";
 import { getPublishedConferences } from "@/services/conferenceService";
 import { getPublishedEvents } from "@/services/eventService";
@@ -63,16 +65,21 @@ export default function HomePage() {
       <Hero />
 
       {galleryImages.length > 0 && (
-        <Section title="Gallery" subtitle="Moments from our conferences and events.">
+        <Section eyebrow="Highlights" title="Gallery" subtitle="Moments from our conferences and events.">
           <LandingGallery images={galleryImages} />
         </Section>
       )}
 
-      <Section title="Upcoming Conferences" subtitle="National and international conferences currently open for registration." viewAllHref="/conferences?tab=upcoming">
+      <Section
+        eyebrow="What's next"
+        title="Upcoming Conferences"
+        subtitle="National and international conferences currently open for registration."
+        viewAllHref={canSeeConferences ? "/conferences?tab=upcoming" : undefined}
+      >
         {authLoading ? (
           <GridSkeleton />
         ) : !canSeeConferences ? (
-          <ConferenceGatePrompt />
+          <RegistrationGate />
         ) : upcoming === null ? (
           <GridSkeleton />
         ) : upcoming.length === 0 ? (
@@ -86,84 +93,98 @@ export default function HomePage() {
         )}
       </Section>
 
-      <Section title="Latest Notifications" subtitle="Deadlines, acceptances and announcements." viewAllHref="/notifications" tone="muted">
-        {notifications === null ? (
-          <ListSkeleton />
-        ) : notifications.length === 0 ? (
-          <EmptyState title="No notifications yet." />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+      {notifications && notifications.length > 0 && (
+        <Section eyebrow="Stay informed" title="Latest Notifications" subtitle="Deadlines, acceptances and announcements." viewAllHref="/notifications" tone="muted">
+          <div className="grid gap-4 md:grid-cols-2">
             {notifications.map((n) => (
               <NotificationCard key={n.id} notification={n} />
             ))}
           </div>
-        )}
-      </Section>
+        </Section>
+      )}
 
-      <Section title="Upcoming Events" subtitle="Seminars, workshops and other academic events." viewAllHref="/events">
-        {events === null ? (
-          <ListSkeleton />
-        ) : events.length === 0 ? (
-          <EmptyState title="No upcoming events available." />
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {events && events.length > 0 && (
+        <Section eyebrow="Happening soon" title="Upcoming Events" subtitle="Seminars, workshops and other academic events." viewAllHref="/events">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {events.map((e) => (
               <EventCard key={e.id} event={e} />
             ))}
           </div>
-        )}
-      </Section>
+        </Section>
+      )}
 
-      <Section title="Why Join Ajanta Prakashan Conferences" tone="muted">
+      <Section eyebrow="Why us" title={`Why Join ${settings.websiteName} Conferences`} tone="muted">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {WHY_JOIN.map((item) => (
-            <div key={item.title} className="rounded-xl border border-ink-200 bg-white p-5">
-              <item.icon className="h-8 w-8 text-brand-500" />
-              <h3 className="mt-3 font-medium text-ink-900">{item.title}</h3>
-              <p className="mt-1.5 text-sm text-ink-500">{item.text}</p>
+            <div
+              key={item.title}
+              className="group rounded-2xl border border-ink-200/70 bg-paper-50 p-6 transition duration-300 hover:-translate-y-1 hover:border-brand-200 hover:bg-white hover:shadow-lift"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-colors duration-300 group-hover:bg-brand-500 group-hover:text-white">
+                <item.icon className="h-6 w-6" />
+              </div>
+              <h3 className="mt-5 font-semibold text-ink-900">{item.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-500">{item.text}</p>
             </div>
           ))}
         </div>
       </Section>
 
-      <Section title="Past Conferences" subtitle="A record of conferences successfully concluded." viewAllHref="/conferences?tab=past">
-        {authLoading ? (
-          <GridSkeleton />
-        ) : !canSeeConferences ? (
-          <ConferenceGatePrompt />
-        ) : past === null ? (
-          <GridSkeleton />
-        ) : past.length === 0 ? (
-          <EmptyState title="No past conferences yet." />
-        ) : (
+      {canSeeConferences && past && past.length > 0 && (
+        <Section eyebrow="Archive" title="Past Conferences" subtitle="A record of conferences successfully concluded." viewAllHref="/conferences?tab=past">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {past.map((c) => (
               <ConferenceCard key={c.id} conference={c} />
             ))}
           </div>
-        )}
-      </Section>
+        </Section>
+      )}
 
-      <Section title="About" tone="muted">
-        <p className="max-w-3xl text-base leading-relaxed text-ink-600">{settings.description}</p>
-      </Section>
+      <ClosingBand registered={canSeeConferences} loading={authLoading} />
     </>
   );
 }
 
-function ConferenceGatePrompt() {
+function ClosingBand({ registered, loading }: { registered: boolean; loading: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-ink-300 bg-white px-6 py-14 text-center">
-      <Lock className="h-10 w-10 text-ink-300" aria-hidden />
-      <p className="text-base font-medium text-ink-700">Register to view conferences</p>
-      <p className="max-w-sm text-sm text-ink-500">Conference details are only visible to registered visitors. It takes under a minute.</p>
-      <Link
-        href="/register"
-        className="mt-1 inline-flex items-center justify-center rounded-lg bg-brand-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-brand-600"
-      >
-        Register now
-      </Link>
-    </div>
+    <section className="px-4 pb-16 pt-4 sm:px-6 sm:pb-24 lg:px-8">
+      <Reveal className="relative mx-auto max-w-7xl overflow-hidden rounded-3xl bg-ink-950 px-6 py-14 text-center text-white shadow-lift sm:px-12 sm:py-20">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(60% 90% at 100% 0%, rgba(181,101,29,0.55), transparent 60%), radial-gradient(50% 70% at 0% 100%, rgba(220,137,53,0.25), transparent 60%)",
+          }}
+          aria-hidden
+        />
+        <div className="bg-dots absolute inset-0 opacity-50 [mask-image:radial-gradient(60%_80%_at_50%_50%,black,transparent)]" aria-hidden />
+        <div className="relative mx-auto max-w-2xl">
+          <h2 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl">
+            {registered ? "Need help with a conference?" : "Join our academic community"}
+          </h2>
+          <p className="mt-4 text-base leading-relaxed text-ink-300 sm:text-lg">
+            {registered
+              ? "Our team is happy to help with registration, paper submission and payments."
+              : "Register once to unlock conference details, fees and committees — and get updates on every deadline."}
+          </p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            {!loading && !registered && (
+              <LinkButton href="/register" size="lg">
+                Register now <ArrowRight className="h-5 w-5" />
+              </LinkButton>
+            )}
+            {!loading && registered && (
+              <LinkButton href="/conferences" size="lg">
+                Browse conferences <ArrowRight className="h-5 w-5" />
+              </LinkButton>
+            )}
+            <LinkButton href="/contact" variant="glass" size="lg">
+              Contact us
+            </LinkButton>
+          </div>
+        </div>
+      </Reveal>
+    </section>
   );
 }
 
@@ -171,17 +192,7 @@ function GridSkeleton() {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {[0, 1, 2].map((i) => (
-        <Skeleton key={i} className="h-80 w-full rounded-xl" />
-      ))}
-    </div>
-  );
-}
-
-function ListSkeleton() {
-  return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      {[0, 1].map((i) => (
-        <Skeleton key={i} className="h-24 w-full rounded-xl" />
+        <Skeleton key={i} className="h-[26rem] w-full rounded-2xl" />
       ))}
     </div>
   );

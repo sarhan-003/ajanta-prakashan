@@ -3,13 +3,14 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import type { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
-import { Search } from "lucide-react";
+import { Search, SearchX } from "lucide-react";
 import { ConferenceCard } from "@/components/public/ConferenceCard";
+import { PageHero } from "@/components/public/PageHero";
 import { EmptyState } from "@/components/common/EmptyState";
 import { ErrorState } from "@/components/common/ErrorState";
 import { Skeleton } from "@/components/common/LoadingSpinner";
 import { Button } from "@/components/common/Button";
-import { Select } from "@/components/common/FormControls";
+import { Input, Select } from "@/components/common/FormControls";
 import { RequireRegistration } from "@/components/public/RequireRegistration";
 import { getPublishedConferences, searchPublishedConferences } from "@/services/conferenceService";
 import type { Conference, ConferenceMode } from "@/types";
@@ -77,92 +78,99 @@ function ConferencesPageInner() {
     return base.filter((c) => (modeFilter === "all" || c.mode === modeFilter) && (cityFilter === "all" || c.city === cityFilter));
   }, [searchResults, items, modeFilter, cityFilter]);
 
+  const filtering = !!search.trim() || modeFilter !== "all" || cityFilter !== "all";
+
   return (
-    <div className="container-page py-12">
-      <div className="mb-8">
-        <h1 className="font-serif text-3xl font-bold text-ink-900">Conferences</h1>
-        <p className="mt-2 text-ink-500">Browse national and international academic conferences.</p>
-      </div>
+    <>
+      <PageHero eyebrow="Browse" title="Conferences" description="Browse national and international academic conferences." />
 
-      <div className="mb-6 flex flex-wrap items-center gap-1 rounded-lg border border-ink-200 bg-white p-1 w-fit">
-        {(["upcoming", "past", "all"] as Tab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => router.push(`/conferences?tab=${t}`)}
-            className={cn(
-              "rounded-md px-4 py-1.5 text-sm font-medium capitalize",
-              tab === t ? "bg-brand-500 text-white" : "text-ink-600 hover:bg-ink-100"
-            )}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-
-      <div className="mb-8 flex flex-wrap gap-3">
-        <div className="relative w-full max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by title, theme or city..."
-            className="w-full rounded-lg border border-ink-300 bg-white py-2 pl-9 pr-3 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
-          />
-        </div>
-        <Select value={modeFilter} onChange={(e) => setModeFilter(e.target.value as ConferenceMode | "all")} className="w-40">
-          <option value="all">All Modes</option>
-          <option value="online">Online</option>
-          <option value="offline">Offline</option>
-          <option value="hybrid">Hybrid</option>
-        </Select>
-        {cities.length > 0 && (
-          <Select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="w-44">
-            <option value="all">All Locations</option>
-            {cities.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </Select>
-        )}
-      </div>
-
-      {loading ? (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <Skeleton key={i} className="h-80 w-full rounded-xl" />
-          ))}
-        </div>
-      ) : error ? (
-        <ErrorState message={error} onRetry={() => router.refresh()} />
-      ) : displayed.length === 0 ? (
-        <EmptyState
-          title={tab === "past" ? "No past conferences available." : "No upcoming conferences available."}
-          description="Please check back soon, or register to be notified when a new conference is announced."
-        />
-      ) : (
-        <>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {displayed.map((c) => (
-              <ConferenceCard key={c.id} conference={c} />
+      <div className="container-page py-10 sm:py-12">
+        <div className="mb-8 flex flex-col gap-4 rounded-2xl border border-ink-200/70 bg-white p-3 shadow-card lg:flex-row lg:items-center lg:justify-between">
+          <div className="inline-flex w-full gap-1 rounded-xl bg-ink-100 p-1 lg:w-auto" role="tablist" aria-label="Conference timeline">
+            {(["upcoming", "past", "all"] as Tab[]).map((t) => (
+              <button
+                key={t}
+                role="tab"
+                aria-selected={tab === t}
+                onClick={() => router.push(`/conferences?tab=${t}`)}
+                className={cn(
+                  "flex-1 rounded-lg px-5 py-2 text-sm font-medium capitalize transition-all lg:flex-none",
+                  tab === t ? "bg-white text-brand-700 shadow-sm" : "text-ink-600 hover:text-ink-900"
+                )}
+              >
+                {t}
+              </button>
             ))}
           </div>
-          {!searchResults && hasMore && (
-            <div className="mt-8 flex justify-center">
-              <Button variant="outline" onClick={loadMore} loading={loadingMore}>
-                Load more
-              </Button>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="relative w-full sm:w-72">
+              <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by title, theme or city..."
+                aria-label="Search conferences"
+                className="pl-10"
+              />
             </div>
-          )}
-        </>
-      )}
-    </div>
+            <Select value={modeFilter} onChange={(e) => setModeFilter(e.target.value as ConferenceMode | "all")} className="sm:w-40" aria-label="Filter by mode">
+              <option value="all">All Modes</option>
+              <option value="online">Online</option>
+              <option value="offline">Offline</option>
+              <option value="hybrid">Hybrid</option>
+            </Select>
+            {cities.length > 0 && (
+              <Select value={cityFilter} onChange={(e) => setCityFilter(e.target.value)} className="sm:w-44" aria-label="Filter by location">
+                <option value="all">All Locations</option>
+                {cities.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </Select>
+            )}
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <Skeleton key={i} className="h-[26rem] w-full rounded-2xl" />
+            ))}
+          </div>
+        ) : error ? (
+          <ErrorState message={error} onRetry={() => router.refresh()} />
+        ) : displayed.length === 0 ? (
+          <EmptyState
+            icon={filtering ? SearchX : undefined}
+            title={filtering ? "No conferences match your search." : tab === "past" ? "No past conferences available." : "No upcoming conferences available."}
+            description={filtering ? "Try a different keyword or clear the filters." : "Please check back soon, or register to be notified when a new conference is announced."}
+          />
+        ) : (
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {displayed.map((c) => (
+                <ConferenceCard key={c.id} conference={c} />
+              ))}
+            </div>
+            {!searchResults && hasMore && (
+              <div className="mt-10 flex justify-center">
+                <Button variant="outline" size="lg" onClick={loadMore} loading={loadingMore}>
+                  Load more
+                </Button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 }
 
 export default function ConferencesPage() {
   return (
-    <Suspense fallback={<div className="container-page py-12"><Skeleton className="h-96 w-full rounded-xl" /></div>}>
+    <Suspense fallback={<div className="container-page py-12"><Skeleton className="h-96 w-full rounded-2xl" /></div>}>
       <RequireRegistration>
         <ConferencesPageInner />
       </RequireRegistration>

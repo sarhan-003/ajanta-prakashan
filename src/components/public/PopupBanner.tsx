@@ -1,7 +1,8 @@
 "use client";
 
-import { X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ArrowRight, X } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { buttonClasses } from "@/components/common/buttonStyles";
 import { getActiveLandingImages } from "@/services/landingImageService";
 import type { LandingImage } from "@/types";
 
@@ -38,7 +39,7 @@ export function PopupBanner() {
       .catch(() => {});
   }, []);
 
-  function dismiss() {
+  const dismiss = useCallback(() => {
     setOpen(false);
     if (!image) return;
     try {
@@ -46,34 +47,48 @@ export function PopupBanner() {
     } catch {
       // Nothing to persist to — it'll just show again next page load, which is fine.
     }
-  }
+  }, [image]);
+
+  // Esc closes the popup, like any other dialog.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && dismiss();
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, dismiss]);
 
   if (!open || !image) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4" role="dialog" aria-modal="true">
-      <div className="relative w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl">
+    <div
+      className="fixed inset-0 z-[60] flex animate-fade-in items-center justify-center bg-ink-950/70 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-label={image.caption || "Announcement"}
+      onClick={dismiss}
+    >
+      <div className="relative w-full max-w-md animate-scale-in overflow-hidden rounded-2xl bg-white shadow-2xl ring-1 ring-white/10" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={dismiss}
           aria-label="Close"
-          className="absolute right-3 top-3 z-10 rounded-full bg-black/50 p-1.5 text-white hover:bg-black/70"
+          className="absolute right-3 top-3 z-10 rounded-full bg-black/55 p-2 text-white backdrop-blur transition-colors hover:bg-black/75"
         >
           <X className="h-4 w-4" />
         </button>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={image.imageUrl} alt={image.caption} className="max-h-[70vh] w-full object-cover" />
         {(image.caption || image.linkUrl) && (
-          <div className="space-y-3 p-5">
-            {image.caption && <p className="text-sm font-medium text-ink-800">{image.caption}</p>}
+          <div className="space-y-4 p-5">
+            {image.caption && <p className="font-serif text-lg font-semibold leading-snug text-ink-900">{image.caption}</p>}
             {image.linkUrl && (
               <a
                 href={image.linkUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={dismiss}
-                className="inline-flex items-center justify-center rounded-lg bg-brand-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-600"
+                className={buttonClasses({ variant: "primary", size: "md", className: "w-full" })}
               >
-                Learn more
+                Learn more <ArrowRight className="h-4 w-4" />
               </a>
             )}
           </div>

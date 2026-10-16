@@ -76,16 +76,19 @@ export function AdminLoginForm() {
 
   if (mode === "forgot") {
     return (
-      <form onSubmit={forgotForm.handleSubmit(onForgot)} className="space-y-4">
-        <h2 className="text-lg font-semibold text-ink-900">Reset Password</h2>
-        {info && <p className="rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-800">{info}</p>}
+      <form onSubmit={forgotForm.handleSubmit(onForgot)} className="space-y-5">
+        <div>
+          <h2 className="font-serif text-2xl font-bold text-ink-900">Reset Password</h2>
+          <p className="mt-1 text-sm text-ink-500">We&apos;ll email a reset link to the administrator address.</p>
+        </div>
+        {info && <p className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 ring-1 ring-inset ring-emerald-200">{info}</p>}
         <FormField label="Admin Email" htmlFor="forgot-email" error={forgotForm.formState.errors.email?.message}>
           <Input id="forgot-email" type="email" {...forgotForm.register("email")} />
         </FormField>
-        <Button type="submit" className="w-full" loading={forgotForm.formState.isSubmitting}>
+        <Button type="submit" size="lg" className="w-full" loading={forgotForm.formState.isSubmitting}>
           Send Reset Link
         </Button>
-        <button type="button" onClick={() => setMode("login")} className="w-full text-center text-sm text-ink-500 hover:text-ink-700">
+        <button type="button" onClick={() => setMode("login")} className="w-full text-center text-sm font-medium text-ink-500 transition-colors hover:text-brand-700">
           Back to Login
         </button>
       </form>
@@ -93,9 +96,16 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
-      <h2 className="text-lg font-semibold text-ink-900">Admin Login</h2>
-      {error && <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
+    <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-5">
+      <div>
+        <h2 className="font-serif text-2xl font-bold text-ink-900">Admin Login</h2>
+        <p className="mt-1 text-sm text-ink-500">Sign in with your administrator account.</p>
+      </div>
+      {error && (
+        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-inset ring-red-200" role="alert">
+          {error}
+        </p>
+      )}
       <FormField label="Admin Email" htmlFor="email" error={loginForm.formState.errors.email?.message}>
         <div className="relative">
           <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
@@ -108,10 +118,10 @@ export function AdminLoginForm() {
           <Input id="password" type="password" className="pl-9" {...loginForm.register("password")} />
         </div>
       </FormField>
-      <Button type="submit" className="w-full" loading={loginForm.formState.isSubmitting}>
+      <Button type="submit" size="lg" className="w-full" loading={loginForm.formState.isSubmitting}>
         Login
       </Button>
-      <button type="button" onClick={() => setMode("forgot")} className="w-full text-center text-sm text-ink-500 hover:text-ink-700">
+      <button type="button" onClick={() => setMode("forgot")} className="w-full text-center text-sm font-medium text-ink-500 transition-colors hover:text-brand-700">
         Forgot Password?
       </button>
     </form>

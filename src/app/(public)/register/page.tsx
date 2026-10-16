@@ -1,20 +1,28 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CheckCircle2, MessageCircle } from "lucide-react";
+import { ArrowRight, BellRing, CheckCircle2, FileText, MessageCircle, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/common/Button";
+import { buttonClasses } from "@/components/common/buttonStyles";
 import { Checkbox, FormField, Input, Select } from "@/components/common/FormControls";
 import { Skeleton } from "@/components/common/LoadingSpinner";
+import { PageHero } from "@/components/public/PageHero";
 import { DESIGNATION_OPTIONS, registrationSchema, type RegistrationFormValues } from "@/schemas/registration";
 import { registerUser } from "@/services/userService";
 import { getConferenceById } from "@/services/conferenceService";
 import { friendlyFirebaseError } from "@/components/common/ErrorState";
 import { usePublicAuth } from "@/contexts/PublicAuthContext";
 import { buildWhatsAppLink, registrationWhatsAppMessage } from "@/utils/whatsapp";
+
+const PERKS = [
+  { icon: FileText, title: "Full conference details", text: "Tracks, fees, important dates, committees and payment information." },
+  { icon: MessageCircle, title: "One-tap WhatsApp registration", text: "Confirm your interest directly with the organisers — no long forms." },
+  { icon: BellRing, title: "Deadline updates", text: "Be the first to know about new conferences, deadlines and acceptances." },
+];
 
 function RegisterPageInner() {
   const router = useRouter();
@@ -73,7 +81,7 @@ function RegisterPageInner() {
   if (authLoading || (profile && !submitted)) {
     return (
       <div className="container-page py-12">
-        <Skeleton className="h-96 w-full max-w-2xl rounded-xl" />
+        <Skeleton className="h-96 w-full max-w-2xl rounded-2xl" />
       </div>
     );
   }
@@ -81,28 +89,30 @@ function RegisterPageInner() {
   if (submitted) {
     return (
       <div className="container-page flex min-h-[60vh] items-center justify-center py-16">
-        <div className="max-w-md rounded-xl border border-emerald-200 bg-emerald-50 p-8 text-center">
-          <CheckCircle2 className="mx-auto h-12 w-12 text-emerald-500" />
-          <h1 className="mt-4 font-serif text-xl font-semibold text-emerald-900">Registration successful!</h1>
-          <p className="mt-2 text-sm text-emerald-800">You will receive updates about upcoming conferences and events.</p>
-          <div className="mt-6 flex flex-col gap-3">
+        <div className="w-full max-w-md animate-scale-in rounded-3xl border border-emerald-200 bg-gradient-to-b from-emerald-50 to-white p-8 text-center shadow-card sm:p-10">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 ring-8 ring-emerald-50">
+            <CheckCircle2 className="h-8 w-8" />
+          </div>
+          <h1 className="mt-6 font-serif text-2xl font-bold text-emerald-950">Registration successful!</h1>
+          <p className="mt-2 text-sm leading-relaxed text-emerald-800">You will receive updates about upcoming conferences and events.</p>
+          <div className="mt-8 flex flex-col gap-3">
             {whatsAppHref && (
               <a
                 href={whatsAppHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-700"
+                className={buttonClasses({ size: "lg", className: "bg-emerald-600 hover:bg-emerald-700 focus-visible:ring-emerald-600" })}
               >
-                <MessageCircle className="h-4 w-4" /> Message us on WhatsApp
+                <MessageCircle className="h-5 w-5" /> Message us on WhatsApp
               </a>
             )}
             <Link
               href={next || (conferenceId ? `/conferences/view?id=${conferenceId}` : "/conferences")}
-              className="inline-flex items-center justify-center rounded-lg border border-emerald-300 bg-white px-5 py-2.5 text-sm font-medium text-emerald-800 hover:bg-emerald-50"
+              className={buttonClasses({ variant: whatsAppHref ? "outline" : "primary", size: "lg" })}
             >
-              {conferenceId ? "View Conference" : "Browse Conferences"}
+              {conferenceId ? "View Conference" : "Browse Conferences"} <ArrowRight className="h-5 w-5" />
             </Link>
-            <Link href="/profile" className="text-sm text-emerald-700 underline hover:text-emerald-900">
+            <Link href="/profile" className="text-sm font-medium text-emerald-700 underline-offset-4 hover:text-emerald-900 hover:underline">
               View my profile
             </Link>
           </div>
@@ -112,66 +122,120 @@ function RegisterPageInner() {
   }
 
   return (
-    <div className="container-page max-w-2xl py-12">
-      <h1 className="font-serif text-3xl font-bold text-ink-900">Register</h1>
-      <p className="mt-2 text-ink-500">
-        Register your details to view conferences and receive updates about upcoming events. No OTP verification required.
-      </p>
+    <>
+      <PageHero
+        eyebrow="Create your visitor profile"
+        title="Register"
+        description="Register your details to view conferences and receive updates about upcoming events. No OTP verification required."
+      />
 
-      <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5 rounded-xl border border-ink-200 bg-white p-6">
-        {serverError && <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-800">{serverError}</p>}
+      <div className="container-page grid gap-10 py-10 sm:py-14 lg:grid-cols-[1fr_380px] lg:gap-14">
+        <form onSubmit={handleSubmit(onSubmit)} className="rounded-3xl border border-ink-200/70 bg-white p-6 shadow-card sm:p-8" noValidate>
+          {serverError && (
+            <p className="mb-6 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-800 ring-1 ring-inset ring-amber-200" role="alert">
+              {serverError}
+            </p>
+          )}
 
-        <FormField label="Full Name" htmlFor="fullName" required error={errors.fullName?.message}>
-          <Input id="fullName" invalid={!!errors.fullName} {...register("fullName")} />
-        </FormField>
+          <div role="group" aria-labelledby="personal-details" className="space-y-5">
+            <h2 id="personal-details" className="text-sm font-semibold uppercase tracking-wider text-brand-700">
+              Personal details
+            </h2>
+            <FormField label="Full Name" htmlFor="fullName" required error={errors.fullName?.message}>
+              <Input id="fullName" autoComplete="name" invalid={!!errors.fullName} {...register("fullName")} />
+            </FormField>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <FormField label="Mobile Number" htmlFor="mobile" required error={errors.mobile?.message}>
+                <Input id="mobile" inputMode="numeric" autoComplete="tel-national" maxLength={10} invalid={!!errors.mobile} {...register("mobile")} />
+              </FormField>
+              <FormField label="Email (optional)" htmlFor="email" error={errors.email?.message}>
+                <Input id="email" type="email" autoComplete="email" invalid={!!errors.email} {...register("email")} />
+              </FormField>
+            </div>
+          </div>
 
-        <div className="grid gap-5 sm:grid-cols-2">
-          <FormField label="Mobile Number" htmlFor="mobile" required error={errors.mobile?.message}>
-            <Input id="mobile" inputMode="numeric" maxLength={10} invalid={!!errors.mobile} {...register("mobile")} />
-          </FormField>
-          <FormField label="Email (optional)" htmlFor="email" error={errors.email?.message}>
-            <Input id="email" type="email" invalid={!!errors.email} {...register("email")} />
-          </FormField>
-        </div>
+          <div role="group" aria-labelledby="location-work" className="mt-8 space-y-5 border-t border-ink-100 pt-8">
+            <h2 id="location-work" className="text-sm font-semibold uppercase tracking-wider text-brand-700">
+              Location &amp; work
+            </h2>
+            <div className="grid gap-5 sm:grid-cols-2">
+              <FormField label="City" htmlFor="city" required error={errors.city?.message}>
+                <Input id="city" autoComplete="address-level2" invalid={!!errors.city} {...register("city")} />
+              </FormField>
+              <FormField label="State (optional)" htmlFor="state" error={errors.state?.message}>
+                <Input id="state" autoComplete="address-level1" invalid={!!errors.state} {...register("state")} />
+              </FormField>
+            </div>
+            <FormField label="Designation" htmlFor="designation" required error={errors.designation?.message}>
+              <Select id="designation" invalid={!!errors.designation} defaultValue="" {...register("designation")}>
+                <option value="" disabled>
+                  Select designation
+                </option>
+                {DESIGNATION_OPTIONS.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </Select>
+            </FormField>
+            <FormField label="School / College / Institution" htmlFor="institution" required error={errors.institution?.message}>
+              <Input id="institution" autoComplete="organization" invalid={!!errors.institution} {...register("institution")} />
+            </FormField>
+          </div>
 
-        <FormField label="City" htmlFor="city" required error={errors.city?.message}>
-          <Input id="city" invalid={!!errors.city} {...register("city")} />
-        </FormField>
+          <div className="mt-8 border-t border-ink-100 pt-6">
+            <Checkbox label="Notify me about upcoming conferences and events" {...register("notificationEnabled")} defaultChecked />
+          </div>
 
-        <FormField label="State (optional)" htmlFor="state" error={errors.state?.message}>
-          <Input id="state" invalid={!!errors.state} {...register("state")} />
-        </FormField>
+          <Button type="submit" size="lg" className="mt-6 w-full" loading={isSubmitting}>
+            Register <ArrowRight className="h-5 w-5" />
+          </Button>
+          <p className="mt-4 flex items-center justify-center gap-1.5 text-center text-xs text-ink-500">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" /> Your details are handled as described in our{" "}
+            <Link href="/privacy-policy" className="font-medium text-brand-700 underline-offset-2 hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </form>
 
-        <FormField label="Designation" htmlFor="designation" required error={errors.designation?.message}>
-          <Select id="designation" invalid={!!errors.designation} defaultValue="" {...register("designation")}>
-            <option value="" disabled>
-              Select designation
-            </option>
-            {DESIGNATION_OPTIONS.map((d) => (
-              <option key={d} value={d}>
-                {d}
-              </option>
-            ))}
-          </Select>
-        </FormField>
-
-        <FormField label="School / College / Institution" htmlFor="institution" required error={errors.institution?.message}>
-          <Input id="institution" invalid={!!errors.institution} {...register("institution")} />
-        </FormField>
-
-        <Checkbox label="Notify me about upcoming conferences and events" {...register("notificationEnabled")} defaultChecked />
-
-        <Button type="submit" className="w-full" loading={isSubmitting}>
-          Register
-        </Button>
-      </form>
-    </div>
+        <aside>
+          <div className="relative overflow-hidden rounded-3xl bg-ink-950 p-7 text-white shadow-lift sm:p-8 lg:sticky lg:top-24">
+            <div
+              className="absolute inset-0"
+              style={{ backgroundImage: "radial-gradient(70% 60% at 100% 0%, rgba(181,101,29,0.5), transparent 60%)" }}
+              aria-hidden
+            />
+            <div className="bg-dots absolute inset-0 opacity-40 [mask-image:linear-gradient(to_bottom,black,transparent_70%)]" aria-hidden />
+            <div className="relative">
+              <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
+                <Sparkles className="h-3.5 w-3.5" /> Why register?
+              </p>
+              <h2 className="mt-3 font-serif text-2xl font-semibold leading-snug">One quick form unlocks everything.</h2>
+              <ul className="mt-7 space-y-6">
+                {PERKS.map((perk) => (
+                  <li key={perk.title} className="flex gap-4">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-brand-300 ring-1 ring-white/10">
+                      <perk.icon className="h-5 w-5" />
+                    </span>
+                    <span>
+                      <span className="block font-semibold">{perk.title}</span>
+                      <span className="mt-1 block text-sm leading-relaxed text-ink-300">{perk.text}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </>
   );
 }
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="container-page py-12"><Skeleton className="h-96 w-full max-w-2xl rounded-xl" /></div>}>
+    <Suspense fallback={<div className="container-page py-12"><Skeleton className="h-96 w-full max-w-2xl rounded-2xl" /></div>}>
       <RegisterPageInner />
     </Suspense>
   );
